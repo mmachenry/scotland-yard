@@ -1,0 +1,20 @@
+[197,141,112,94,174]
+FugitiveMove Taxi
+DetectiveMove Purple Taxi 184
+DetectiveMove Yellow Taxi 142
+DetectiveMove Red Taxi 111
+DetectiveMove Green Bus 93
+DetectiveMove Blue Taxi 161
+FugitiveMove Taxi
+DetectiveMove Purple Bus 153
+DetectiveMove Yellow Bus 159
+DetectiveMove Red Underground 67
+DetectiveMove Green Underground 79
+DetectiveMove Blue Bus 107
+Reveal Taxi 155
+DetectiveMove Purple Taxi 167
+DetectiveMove Yellow Underground 140
+DetectiveMove Red Underground 89
+DetectiveMove Green Underground 111
+DetectiveMove Blue Bus 161
+FugitiveMove Taxi

@@ -1,0 +1,79 @@
+[198,117,53,50,141]
+FugitiveMove Taxi
+DetectiveMove Purple Taxi 186
+DetectiveMove Yellow Taxi 118
+DetectiveMove Red Taxi 69
+DetectiveMove Green Taxi 37
+DetectiveMove Blue Taxi 133
+FugitiveMove Taxi
+DetectiveMove Purple Taxi 185
+DetectiveMove Yellow Bus 105
+DetectiveMove Red Taxi 52
+DetectiveMove Green Taxi 23
+DetectiveMove Blue Bus 140
+Reveal Taxi 29
+DetectiveMove Purple Underground 159
+DetectiveMove Yellow Bus 72
+DetectiveMove Red Bus 41
+DetectiveMove Green Bus 13
+DetectiveMove Blue Underground 89
+DoubleMove (FugitiveMove Black) (FugitiveMove Taxi)
+DetectiveMove Purple Bus 161
+DetectiveMove Yellow Taxi 71
+DetectiveMove Red Bus 52
+DetectiveMove Green Bus 14
+DetectiveMove Blue Underground 67
+FugitiveMove Taxi
+DetectiveMove Purple Bus 107
+DetectiveMove Yellow Taxi 55
+DetectiveMove Red Taxi 69
+DetectiveMove Green Taxi 25
+DetectiveMove Blue Underground 13
+DoubleMove (FugitiveMove Taxi) (Reveal Taxi 118)
+DetectiveMove Purple Bus 161
+DetectiveMove Yellow Bus 89
+DetectiveMove Red Taxi 86
+DetectiveMove Green Taxi 39
+DetectiveMove Blue Bus 23
+FugitiveMove Black
+DetectiveMove Purple Bus 159
+DetectiveMove Yellow Underground 140
+DetectiveMove Red Bus 102
+DetectiveMove Green Taxi 52
+DetectiveMove Blue Bus 67
+FugitiveMove Black
+DetectiveMove Purple Underground 185
+DetectiveMove Yellow Bus 156
+DetectiveMove Red Bus 127
+DetectiveMove Green Bus 13
+DetectiveMove Blue Bus 82
+FugitiveMove Taxi
+DetectiveMove Purple Taxi 184
+DetectiveMove Yellow Bus 154
+DetectiveMove Red Bus 102
+DetectiveMove Green Underground 89
+DetectiveMove Blue Bus 100
+FugitiveMove Bus
+DetectiveMove Purple Bus 185
+DetectiveMove Yellow Bus 140
+DetectiveMove Red Taxi 115
+DetectiveMove Green Bus 105
+DetectiveMove Blue Bus 111
+Reveal Bus 52
+DetectiveMove Purple Underground 159
+DetectiveMove Yellow Underground 89
+DetectiveMove Red Taxi 102
+DetectiveMove Green Bus 87
+DetectiveMove Blue Underground 67
+FugitiveMove Taxi
+DetectiveMove Purple Taxi 142
+DetectiveMove Yellow Underground 13
+DetectiveMove Red Bus 86
+DetectiveMove Green Bus 41
+DetectiveMove Blue Taxi 51
+FugitiveMove Taxi
+DetectiveMove Purple Bus 116
+DetectiveMove Yellow Bus 14
+DetectiveMove Red Bus 52
+DetectiveMove Green Taxi 54
+DetectiveMove Blue Taxi 68
