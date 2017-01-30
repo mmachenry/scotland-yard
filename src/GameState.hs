@@ -1,15 +1,18 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 
 module GameState (
-    GameState(..),
-    applyMoves,
-    DetectiveState(..),
-    FugitiveState(..),
-    buildGameState,
-    heur,
-    initGameState,
-    detectiveMoves,
-    growFugitiveLocations
+  GameState(..),
+  applyMoves,
+  DetectiveState(..),
+  FugitiveState(..),
+  buildGameState,
+  displayGameState,
+  displayDetectiveState,
+  displayFugitiveState,
+  heur,
+  initGameState,
+  detectiveMoves,
+  growFugitiveLocations
 ) where
 
 import Data.List
@@ -28,19 +31,19 @@ data GameState = GameState {
     history :: [Move],
     turnsLeft :: Int,
     playerToMove :: Player
-}
+} deriving (Eq, Show)
 
 data DetectiveState = DetectiveState {
     detectiveColor :: Detective,
     detectiveTickets :: (MultiSet.MultiSet Ticket),
     detectivePosition :: Stop
-}
+} deriving (Eq, Show)
 
 data FugitiveState = FugitiveState {
     fugitiveTickets :: (MultiSet.MultiSet Ticket),
     fugitiveDoubleMoves :: Int,
     fugitivePositions :: (Set.Set Stop)
-}
+} deriving (Eq, Show)
 
 detectivePositions gs = Set.fromList (map detectivePosition (detectives gs))
 
@@ -189,22 +192,23 @@ numFugitveMoves _ = 0
 ----------------------------------------------------------------------
 -- Display
 ----------------------------------------------------------------------
-instance Show GameState where
-    show (GameState ds f h _ nextp) =
-        (concat (intersperse "\n" (map show ds))) ++ "\n" ++ (show f) ++ 
-        "\nLast move: " ++ (if null h then "N/A" else show (head h)) ++
-        "\nNext player: " ++ show nextp ++
-        "\nMoves: " ++ (show (length h)) ++ "\n"
+displayGameState :: GameState -> String
+displayGameState (GameState ds f h _ nextp) =
+  (concat (intersperse "\n" (map displayDetectiveState ds)))
+  ++ "\n" ++ (displayFugitiveState f) ++ 
+  "\nLast move: " ++ (if null h then "N/A" else show (head h)) ++
+  "\nNext player: " ++ show nextp ++
+  "\nMoves: " ++ (show (length h)) ++ "\n"
 
-instance Show DetectiveState where
-    show (DetectiveState color tickets position) =
-        (show color) ++ ": " ++ (show position) ++ " " ++
-         show (MultiSet.toOccurList tickets)
+displayDetectiveState :: DetectiveState -> String
+displayDetectiveState (DetectiveState color tickets position) =
+  (show color) ++ ": " ++ (show position) ++ " " ++
+  show (MultiSet.toOccurList tickets)
 
-instance Show FugitiveState where
-    show (FugitiveState tickets _ positions) =
-        "Mr. X: " ++ show (Set.toList positions) ++ " " ++
-        show (MultiSet.toOccurList tickets)
+displayFugitiveState :: FugitiveState -> String
+displayFugitiveState (FugitiveState tickets _ positions) =
+  "Mr. X: " ++ show (Set.toList positions) ++ " " ++
+  show (MultiSet.toOccurList tickets)
 
 ----------------------------------------------------------------------
 -- Heuristics

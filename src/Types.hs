@@ -23,12 +23,13 @@ data Move =
     | FugitiveMove Ticket
     | Reveal Ticket Stop
     | DoubleMove Move Move
-    deriving (Show, Read)
+    deriving (Show, Read, Eq)
 
 data Player = MrX | Detectives deriving (Show,Eq)
 
-data Detective = Purple | Yellow | Red | Green | Blue deriving (Show,Read,Eq,Enum)
+data Detective = Purple | Yellow | Red | Green | Blue
+  deriving (Show,Read,Eq,Enum)
 
 data Ticket = Taxi | Bus | Underground | Black
-    deriving (Enum,Show,Ix,Eq,Ord, Read)
+  deriving (Enum,Show,Ix,Eq,Ord, Read)
 
