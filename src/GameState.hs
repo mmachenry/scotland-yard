@@ -238,7 +238,7 @@ detectiveDistances gs =
 
 totalDistanceTo :: Set.Set Stop -> Stop -> Int
 totalDistanceTo set pos =
-    Set.fold (\p total->total + (floydWarshall!(pos,p))) 0 set
+    Set.fold (\p total->total + (distance pos p)) 0 set
 
 cardinality :: GameState -> Int
 cardinality gs = Set.size (fugitivePositions (fugitive gs))

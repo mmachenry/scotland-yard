@@ -13,7 +13,7 @@ import qualified Data.Set as Set
 
 type Board = Array Stop (Array Route (Set.Set Stop))
 data Route = TaxiRoute | BusRoute | UndergroundRoute | FerrieRoute
-  deriving (Show,Enum,Ix,Eq,Ord)
+  deriving (Show,Enum,Ix,Eq,Ord,Bounded)
 
 type Stop = Int
 

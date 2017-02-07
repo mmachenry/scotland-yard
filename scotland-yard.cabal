@@ -24,6 +24,7 @@ library
                      , array
                      , containers
                      , game-tree
+                     , matrix
                      , multiset
   default-language:    Haskell2010
 
