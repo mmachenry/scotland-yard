@@ -1,12 +1,12 @@
 module FloydWarshall (
-floydWarshall,
-maxDistance
-) where
+  floydWarshall,
+  maxDistance
+  ) where
 
 import Data.Array.Unboxed
 
 zipper :: Int -> [Int] -> [((Int,Int), Int)]
-zipper i l = zipWith (\i2 elem-> ((i,i2),elem)) [0..200] l
+zipper i = zipWith (\i2 elem-> ((i,i2),elem)) [0..200]
 
 floydWarshall :: UArray (Int,Int) Int
 floydWarshall =

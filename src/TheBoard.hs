@@ -8,9 +8,9 @@ import Types
 --data Route = TaxiRoute | BusRoute | UndergroundRoute | FerrieRoute
 
 -- convert the board from using lists to sets
-convertToSet :: [(Route,[Stop])] -> [(Route,(Set.Set Stop))]
+convertToSet :: [(Route,[Stop])] -> [(Route,Set.Set Stop)]
 convertToSet [] = []
-convertToSet ((r,stops):rest) = (r,Set.fromList stops) : (convertToSet rest)
+convertToSet ((r,stops):rest) = (r,Set.fromList stops) : convertToSet rest
 
 theBoard :: Board
 theBoard =

@@ -35,24 +35,24 @@ data GameState = GameState {
 
 data DetectiveState = DetectiveState {
     detectiveColor :: Detective,
-    detectiveTickets :: (MultiSet.MultiSet Ticket),
+    detectiveTickets :: MultiSet.MultiSet Ticket,
     detectivePosition :: Stop
 } deriving (Eq, Show)
 
 data FugitiveState = FugitiveState {
-    fugitiveTickets :: (MultiSet.MultiSet Ticket),
+    fugitiveTickets :: MultiSet.MultiSet Ticket,
     fugitiveDoubleMoves :: Int,
-    fugitivePositions :: (Set.Set Stop)
+    fugitivePositions :: Set.Set Stop
 } deriving (Eq, Show)
 
 detectivePositions gs = Set.fromList (map detectivePosition (detectives gs))
 
 instance Game_tree GameState where
     is_terminal gs =
-        Set.null (fugitivePositions (fugitive gs)) || (turnsLeft gs) == 0
+        Set.null (fugitivePositions (fugitive gs)) || turnsLeft gs == 0
     node_value gs =
-        (if playerToMove gs == MrX then 1 else -1) * (heur gs)
-    children gs = nextGameState gs
+        (if playerToMove gs == MrX then 1 else -1) * heur gs
+    children = nextGameState
 
 legalMoves :: GameState -> [Move]
 legalMoves gs@(GameState ds (FugitiveState tickets _ positions) _ _ MrX) =
@@ -70,13 +70,13 @@ legalMoves gs@(GameState ds (FugitiveState tickets _ positions) _ _ MrX) =
               (Set.toList positions)]
 
 isRevealTurn :: GameState -> Bool
-isRevealTurn gs = Set.member (24-(turnsLeft gs)) revealTurns
+isRevealTurn gs = Set.member (24-turnsLeft gs) revealTurns
 
 nextGameState :: GameState -> [GameState]
 nextGameState gs@(GameState _ _ _ _ MrX) = map (applyMove gs) (legalMoves gs)
 nextGameState gs@(GameState ds f h t Detectives) =
     [applyMoves gs moves |
-     p' <- detectiveMoves (ds!!0),
+     p' <- detectiveMoves (head ds),
      y' <- detectiveMoves (ds!!1),
      r' <- detectiveMoves (ds!!2),
      g' <- detectiveMoves (ds!!3),
@@ -86,8 +86,8 @@ nextGameState gs@(GameState ds f h t Detectives) =
     where noCollisions :: [Stop] -> [Stop] -> Bool
           noCollisions [] [] = True
           noCollisions orig (d':otherd') =
-                 not (any (==d') otherd')
-              && not (any (==d') orig)
+                 notElem d' otherd'
+              && notElem d' orig
               && noCollisions (tail orig) otherd'
           movePosition (DetectiveMove _ _ s) = s
           movePosition (NullMove _ s) = s
@@ -95,7 +95,7 @@ nextGameState gs@(GameState ds f h t Detectives) =
 detectiveMoves :: DetectiveState -> [Move]
 detectiveMoves ds@(DetectiveState color tickets position) =
     let moves =
-            [(DetectiveMove color ticket stop) |
+            [DetectiveMove color ticket stop |
              ticket <- map fst (MultiSet.toOccurList tickets),
              stop <- Set.toList (movesFromStop position ticket)]
     in if null moves then [NullMove color position] else moves
@@ -113,11 +113,11 @@ initGameState ds =
         24
         MrX
  
-initDetective color stop =
+initDetective :: Detective -> Stop -> DetectiveState
+initDetective color =
     DetectiveState
         color
         (MultiSet.fromOccurList [(Taxi,10),(Bus,8),(Underground,4)])
-        stop
 
 initFugitive stops =
     FugitiveState 
@@ -127,21 +127,21 @@ initFugitive stops =
         (Set.difference startPositions (Set.fromList stops))
 
 buildGameState :: [Stop] -> [Move] -> GameState
-buildGameState stops moves = applyMoves (initGameState stops) moves
+buildGameState stops = applyMoves (initGameState stops)
 
 ----------------------------------------------------------------------
 -- Apply move
 ----------------------------------------------------------------------
 
 applyMoves :: GameState -> [Move] -> GameState
-applyMoves gs moves = foldl applyMove gs moves
+applyMoves = foldl applyMove
 
 applyMove :: GameState -> Move -> GameState
 applyMove (GameState ds f h turnsLeft player) move =
     GameState (map (applyMoveDetective move) ds)
               (applyMoveFugitive move f ds)
               (move:h)
-              (turnsLeft - (numFugitveMoves move))
+              (turnsLeft - numFugitveMoves move)
               (nextPlayer player)
 
 applyMoveDetective (DetectiveMove c t s) d@(DetectiveState color tickets stop)
@@ -182,11 +182,11 @@ findFugitive (DoubleMove m1 m2) fl dl =
 -- a set of the places a fugitive may be after using the given ticket
 growFugitiveLocations :: Set.Set Stop -> Ticket -> Set.Set Stop
 growFugitiveLocations fl ticket =
-    Set.unions (map (\stop->movesFromStop stop ticket) (Set.toList fl))
+    Set.unions (map (`movesFromStop` ticket) (Set.toList fl))
 
 numFugitveMoves (FugitiveMove _) = 1
 numFugitveMoves (Reveal _ _) = 1
-numFugitveMoves (DoubleMove m1 m2) = (numFugitveMoves m1) + (numFugitveMoves m2)
+numFugitveMoves (DoubleMove m1 m2) = numFugitveMoves m1 + numFugitveMoves m2
 numFugitveMoves _ = 0
 
 ----------------------------------------------------------------------
@@ -194,15 +194,15 @@ numFugitveMoves _ = 0
 ----------------------------------------------------------------------
 displayGameState :: GameState -> String
 displayGameState (GameState ds f h _ nextp) =
-  (concat (intersperse "\n" (map displayDetectiveState ds)))
-  ++ "\n" ++ (displayFugitiveState f) ++ 
+  intercalate "\n" (map displayDetectiveState ds)
+  ++ "\n" ++ displayFugitiveState f ++ 
   "\nLast move: " ++ (if null h then "N/A" else show (head h)) ++
   "\nNext player: " ++ show nextp ++
-  "\nMoves: " ++ (show (length h)) ++ "\n"
+  "\nMoves: " ++ show (length h) ++ "\n"
 
 displayDetectiveState :: DetectiveState -> String
 displayDetectiveState (DetectiveState color tickets position) =
-  (show color) ++ ": " ++ (show position) ++ " " ++
+  show color ++ ": " ++ show position ++ " " ++
   show (MultiSet.toOccurList tickets)
 
 displayFugitiveState :: FugitiveState -> String
@@ -220,10 +220,14 @@ It is bad for the set of places to have locations far from one another.
 It is bad for the detectives to be far away.
 -}
 
+-- This is a really simple unweighted heuristic that says you get a point 
+-- against for every element of the potential fugitive positions as well as
+-- a point for the distances of the detectives from the positions. This likely
+-- should be weighted very differently. Consider also a measurement of how
+-- close the fugitive locations are to each other.
+
 heur :: GameState -> Int
-heur gs =
-      (detectiveDistances gs)
-    + (cardinality gs)
+heur gs = detectiveDistances gs + cardinality gs
 
 detectiveDistances :: GameState -> Int
 detectiveDistances gs =

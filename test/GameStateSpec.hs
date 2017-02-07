@@ -90,5 +90,5 @@ result = GameState [
 spec :: Spec
 spec = do
   describe "apply moves" $ do
-    it "updates an example game state" $ do
+    it "updates an example game state" $
       s `shouldBe` result

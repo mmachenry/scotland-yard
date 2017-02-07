@@ -24,10 +24,10 @@ movesFromStop stop Taxi        = theBoard!stop!TaxiRoute
 movesFromStop stop Bus         = theBoard!stop!BusRoute
 movesFromStop stop Underground = theBoard!stop!UndergroundRoute
 movesFromStop stop Black =
-  (Set.union (theBoard!stop!FerrieRoute)
-             (Set.union (theBoard!stop!UndergroundRoute)
-                        (Set.union (theBoard!stop!BusRoute)
-                                   (theBoard!stop!TaxiRoute))))
+  Set.union (theBoard!stop!FerrieRoute)
+            (Set.union (theBoard!stop!UndergroundRoute)
+                       (Set.union (theBoard!stop!BusRoute)
+                                  (theBoard!stop!TaxiRoute)))
 
 nextPlayer :: Player -> Player
 nextPlayer MrX = Detectives
