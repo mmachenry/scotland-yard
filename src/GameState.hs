@@ -1,5 +1,3 @@
-{-# LANGUAGE TypeSynonymInstances #-}
-
 module GameState (
   GameState(..),
   applyMoves,
@@ -22,8 +20,6 @@ import Types
 import GameData
 import Data.Tree.Game_tree.Game_tree
 import FloydWarshall
-import Data.Array.Unboxed
-import Data.Ord
 
 data GameState = GameState {
     detectives :: [DetectiveState],
@@ -44,8 +40,6 @@ data FugitiveState = FugitiveState {
     fugitiveDoubleMoves :: Int,
     fugitivePositions :: Set.Set Stop
 } deriving (Eq, Show)
-
-detectivePositions gs = Set.fromList (map detectivePosition (detectives gs))
 
 instance Game_tree GameState where
     is_terminal gs =
@@ -68,13 +62,14 @@ legalMoves gs@(GameState ds (FugitiveState tickets _ positions) _ _ MrX) =
           ticket <- map fst (MultiSet.toOccurList tickets),
           any (\p->not (Set.null (movesFromStop p ticket)))
               (Set.toList positions)]
+legalMoves _ = error "Legal moves only defined for fugitive."
 
 isRevealTurn :: GameState -> Bool
 isRevealTurn gs = Set.member (24-turnsLeft gs) revealTurns
 
 nextGameState :: GameState -> [GameState]
 nextGameState gs@(GameState _ _ _ _ MrX) = map (applyMove gs) (legalMoves gs)
-nextGameState gs@(GameState ds f h t Detectives) =
+nextGameState gs@(GameState ds _ _ _ Detectives) =
     [applyMoves gs moves |
      p' <- detectiveMoves (head ds),
      y' <- detectiveMoves (ds!!1),
@@ -84,16 +79,17 @@ nextGameState gs@(GameState ds f h t Detectives) =
      let moves = [p',y',r',g',b'],
      noCollisions (map detectivePosition ds) (map movePosition moves)]
     where noCollisions :: [Stop] -> [Stop] -> Bool
-          noCollisions [] [] = True
+          noCollisions _ [] = True
           noCollisions orig (d':otherd') =
                  notElem d' otherd'
               && notElem d' orig
               && noCollisions (tail orig) otherd'
           movePosition (DetectiveMove _ _ s) = s
           movePosition (NullMove _ s) = s
+          movePosition _ = error "move position only defined for detective."
  
 detectiveMoves :: DetectiveState -> [Move]
-detectiveMoves ds@(DetectiveState color tickets position) =
+detectiveMoves (DetectiveState color tickets position) =
     let moves =
             [DetectiveMove color ticket stop |
              ticket <- map fst (MultiSet.toOccurList tickets),
@@ -119,6 +115,7 @@ initDetective color =
         color
         (MultiSet.fromOccurList [(Taxi,10),(Bus,8),(Underground,4)])
 
+initFugitive :: [Stop] -> FugitiveState
 initFugitive stops =
     FugitiveState 
         (MultiSet.fromOccurList
@@ -137,18 +134,20 @@ applyMoves :: GameState -> [Move] -> GameState
 applyMoves = foldl applyMove
 
 applyMove :: GameState -> Move -> GameState
-applyMove (GameState ds f h turnsLeft player) move =
-    GameState (map (applyMoveDetective move) ds)
-              (applyMoveFugitive move f ds)
-              (move:h)
-              (turnsLeft - numFugitveMoves move)
-              (nextPlayer player)
+applyMove (GameState ds f h turns player) move =
+  GameState (map (applyMoveDetective move) ds)
+            (applyMoveFugitive move f ds)
+            (move:h)
+            (turns - numFugitveMoves move)
+            (nextPlayer player)
 
-applyMoveDetective (DetectiveMove c t s) d@(DetectiveState color tickets stop)
-    | color == c = DetectiveState color (MultiSet.delete t tickets) s
-    | otherwise = d
+applyMoveDetective :: Move -> DetectiveState -> DetectiveState
+applyMoveDetective (DetectiveMove c t s) d@(DetectiveState color tickets _)
+  | color == c = DetectiveState color (MultiSet.delete t tickets) s
+  | otherwise = d
 applyMoveDetective _ d = d
 
+applyMoveFugitive :: Move -> FugitiveState -> [DetectiveState] -> FugitiveState
 applyMoveFugitive move (FugitiveState tickets doubleMoves stops) ds =
     FugitiveState
              (applyMoveFugitiveTickets move tickets)
@@ -158,36 +157,41 @@ applyMoveFugitive move (FugitiveState tickets doubleMoves stops) ds =
                  stops
                  (Set.fromList (map detectivePosition ds)))
 
-applyMoveFugitiveTickets (DetectiveMove _ t _) ft = MultiSet.insert t ft
-applyMoveFugitiveTickets (NullMove _ _) ft = ft
-applyMoveFugitiveTickets (FugitiveMove t) ft = MultiSet.delete t ft
-applyMoveFugitiveTickets (Reveal t _) ft = MultiSet.delete t ft
-applyMoveFugitiveTickets (DoubleMove move1 move2) ft =
+applyMoveFugitiveTickets
+  :: Move -> MultiSet.MultiSet Ticket -> MultiSet.MultiSet Ticket
+applyMoveFugitiveTickets move ft = case move of
+  DetectiveMove _ t _ -> MultiSet.insert t ft
+  NullMove _ _ -> ft
+  FugitiveMove t -> MultiSet.delete t ft
+  Reveal t _ -> MultiSet.delete t ft
+  DoubleMove move1 move2 ->
     applyMoveFugitiveTickets move2 (applyMoveFugitiveTickets move1 ft)
 
+applyMoveDoubles :: Move -> Int -> Int
 applyMoveDoubles (DoubleMove m1 m2) dm =
     applyMoveDoubles m2 (applyMoveDoubles m1 (dm-1))
 applyMoveDoubles _ dm = dm
 
 --the set of stops MrX may be in after the the given legal move is taken
-findFugitive ::  Move -> Set.Set Stop -> Set.Set Stop-> Set.Set Stop
-findFugitive (DetectiveMove _ _ stop) fl dl = Set.delete stop fl
-findFugitive (NullMove _ _) fl _ = fl
-findFugitive (FugitiveMove ticket) fl dl =
-    Set.difference (growFugitiveLocations fl ticket) dl
-findFugitive (Reveal _ stop) _ dl = Set.singleton stop
-findFugitive (DoubleMove m1 m2) fl dl =
-    findFugitive m2 (findFugitive m1 fl dl) dl
+findFugitive :: Move -> Set.Set Stop -> Set.Set Stop-> Set.Set Stop
+findFugitive move fl dl = case move of
+  DetectiveMove _ _ stop -> Set.delete stop fl
+  NullMove _ _ -> fl
+  FugitiveMove ticket -> Set.difference (growFugitiveLocations fl ticket) dl
+  Reveal _ stop -> Set.singleton stop
+  DoubleMove m1 m2 -> findFugitive m2 (findFugitive m1 fl dl) dl
 
 -- a set of the places a fugitive may be after using the given ticket
 growFugitiveLocations :: Set.Set Stop -> Ticket -> Set.Set Stop
 growFugitiveLocations fl ticket =
     Set.unions (map (`movesFromStop` ticket) (Set.toList fl))
 
-numFugitveMoves (FugitiveMove _) = 1
-numFugitveMoves (Reveal _ _) = 1
-numFugitveMoves (DoubleMove m1 m2) = numFugitveMoves m1 + numFugitveMoves m2
-numFugitveMoves _ = 0
+numFugitveMoves :: Move -> Int
+numFugitveMoves move = case move of
+  FugitiveMove _ -> 1
+  Reveal _ _ -> 1
+  DoubleMove m1 m2 -> numFugitveMoves m1 + numFugitveMoves m2
+  _ -> 0
 
 ----------------------------------------------------------------------
 -- Display
@@ -238,7 +242,7 @@ detectiveDistances gs =
 
 totalDistanceTo :: Set.Set Stop -> Stop -> Int
 totalDistanceTo set pos =
-    Set.fold (\p total->total + (distance pos p)) 0 set
+    Set.fold (\p total->total + distance pos p) 0 set
 
 cardinality :: GameState -> Int
 cardinality gs = Set.size (fugitivePositions (fugitive gs))

@@ -1,9 +1,9 @@
 import GameState
 import System.IO
-import Types
 import System.Environment
 import Data.Tree.Game_tree.Negascout
 
+main :: IO ()
 main = do
     str <- hGetContents stdin
     args <- getArgs
