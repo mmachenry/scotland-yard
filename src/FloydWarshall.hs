@@ -1,14 +1,27 @@
+-- | This module contains the cached output of the Floyd-Warshall algorithm to
+-- find the shortest distance between all pairs of nodes on a graph for the
+-- Scotland Yard game board. The module contains a Matrix indexed by stop with
+-- an integer value distance and provides the distance function as an interface.
 module FloydWarshall (
-  floydWarshall,
   distance
   ) where
 
 import Types
 import qualified Data.Matrix as Matrix
 
+-- | The shortest distance between any two stops on the board. Notice that this
+-- metric does not account for using ferrie routes. It is the distance the
+-- detectives must travel to get from point A to point B.
 distance :: Stop -> Stop -> Int
 distance s1 s2 = Matrix.getElem s1 s2 floydWarshall
 
+-- A cached matrix of all of the distances from each stop to every other stop.
+-- Notice that the matrix is completely filled out. There is duplicate
+-- information as a result. Being a non-directed graph the distance from A to
+-- B is the same as the distance from B to A. Also notice that there is no stop
+-- 108. Rather than renumber the stops to be more cannonical, 108 is considered
+-- to have a distance of 200 to every other stop. It is basically a disjoint
+-- sub graph of one node.
 floydWarshall :: Matrix.Matrix Int
 floydWarshall = Matrix.fromLists [
     [0,3,4,3,5,6,7,1,1,3,4,4,2,3,4,5,6,2,2,2,3,3,3,3,4,5,5,5,5,7,3,3,2,2,4,5,4,4,4,4,4,6,3,2,2,1,2,3,5,5,4,3,5,5,4,6,2,1,2,3,2,3,3,4,4,4,3,4,4,5,4,5,3,2,2,3,2,2,2,4,5,4,5,4,5,4,5,4,3,5,5,3,3,3,3,3,3,3,4,4,5,4,5,5,4,5,5,200,4,4,3,4,5,6,5,5,5,5,6,6,5,4,4,3,5,5,5,6,6,4,5,5,5,6,5,6,5,4,5,4,6,5,5,5,6,5,6,5,5,5,6,5,4,5,6,5,6,6,4,5,5,7,4,6,5,5,5,6,6,6,6,5,6,6,7,5,5,6,6,5,6,7,6,5,5,6,5,5,6,6,5,6,6,7,7,6,6,6,5,6],
