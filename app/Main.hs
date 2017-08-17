@@ -5,12 +5,12 @@ import Data.Tree.Game_tree.Negascout
 
 main :: IO ()
 main = do
-    str <- hGetContents stdin
-    args <- getArgs
-    let lookAhead = read (args!!0)
-    let startPos:moveStrs = lines str
-    let currentGameState = buildGameState (read startPos) (map read moveStrs)
-    let (states,value) = negascout currentGameState lookAhead
-    mapM_ (putStrLn . displayGameState) states
-    putStrLn $ show value
-    putStrLn $ displayGameState currentGameState
+  str <- hGetContents stdin
+  args <- getArgs
+  let lookAhead = read (args!!0)
+  let startPos:moveStrs = lines str
+  let currentGameState = buildGameState (read startPos) (map read moveStrs)
+  let (states,value) = negascout currentGameState lookAhead
+  mapM_ (putStrLn . displayGameState) states
+  putStrLn $ show value
+  putStrLn $ displayGameState currentGameState
